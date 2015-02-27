@@ -25,3 +25,22 @@ parseMessage x = parseFromWords $ words x
 
 parse :: String -> [LogMessage]
 parse = map parseMessage . lines
+
+timeOfMessage :: LogMessage -> TimeStamp
+timeOfMessage (Unknown _)          = -1
+timeOfMessage (LogMessage _ ts _)  = ts
+
+insert :: LogMessage -> MessageTree -> MessageTree
+insert (Unknown _) mt = mt
+insert lm Leaf = Node Leaf lm Leaf
+insert lm1 (Node mt1 lm2 mt2)
+    | (timeOfMessage lm1) < (timeOfMessage lm2) = insert lm1 mt1
+    | otherwise                                 = insert lm1 mt2
+
+build :: [LogMessage] -> MessageTree
+build []     = Leaf
+build (x:xs) = insert x $ build xs
+
+inOrder :: MessageTree -> [LogMessage]
+inOrder Leaf              = []
+inOrder (Node mt1 lm mt2) = (inOrder mt1) ++ [lm] ++ (inOrder mt2)
