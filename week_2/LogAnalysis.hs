@@ -33,9 +33,9 @@ timeOfMessage (LogMessage _ ts _)  = ts
 insert :: LogMessage -> MessageTree -> MessageTree
 insert (Unknown _) mt = mt
 insert lm Leaf = Node Leaf lm Leaf
-insert lm1 (Node mt1 lm2 mt2)
-    | (timeOfMessage lm1) < (timeOfMessage lm2) = insert lm1 mt1
-    | otherwise                                 = insert lm1 mt2
+insert lmNew node@(Node _ lmNode _)
+    | (timeOfMessage lmNew) > (timeOfMessage lmNode) = Node node lmNew Leaf
+    | otherwise                                      = Node Leaf lmNew node
 
 build :: [LogMessage] -> MessageTree
 build []     = Leaf
@@ -44,3 +44,19 @@ build (x:xs) = insert x $ build xs
 inOrder :: MessageTree -> [LogMessage]
 inOrder Leaf              = []
 inOrder (Node mt1 lm mt2) = (inOrder mt1) ++ [lm] ++ (inOrder mt2)
+
+selectSevere :: [LogMessage] -> [LogMessage]
+selectSevere []               = []
+selectSevere (x@(LogMessage (Error sev) _ _):xs)
+    | sev >= 50   = x:(selectSevere xs)
+    | otherwise   = selectSevere xs
+selectSevere ((Unknown _):xs) = selectSevere xs
+selectSevere (_:xs)           = selectSevere xs
+
+showMessages :: [LogMessage] -> [String]
+showMessages []                        = []
+showMessages ((LogMessage _ _ s):xs) = s:(showMessages xs)
+showMessages ((Unknown _):xs)        = showMessages xs
+
+whatWentWrong :: [LogMessage] -> [String]
+whatWentWrong xs = showMessages $ inOrder $ build $ selectSevere xs
