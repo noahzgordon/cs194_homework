@@ -11,12 +11,10 @@ everyNth xs n = case drop (n-1) xs of []     -> []
 
 {- LOCAL MAXIMA -}
 localMaxima :: [Integer] -> [Integer]
-localMaxima []  = []
-localMaxima [_] = []
-localMaxima (_:_:[]) = []
 localMaxima (x:y:z:zs)
   | y > x && y > z = y : localMaxima (y:z:zs)
   | otherwise      = localMaxima (y:z:zs)
+localMaxima _ = []
 
 
 {- HISTOGRAM -}
