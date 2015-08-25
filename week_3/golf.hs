@@ -20,3 +20,16 @@ localMaxima (x:y:z:zs)
 
 
 {- HISTOGRAM -}
+histogram :: [Integer] -> String
+histogram xs = (rows $ digitCounts xs) ++ separator ++ "\n" ++ axis
+  where separator = "=========="
+        axis      = "0123456789"
+
+rows :: [Integer] -> String
+rows xs = unlines $ map (row xs) (reverse [0..9])
+  where row ys n = foldl (addMarker n) [] ys
+        addMarker counter accum n = if n > counter then accum ++ "*" else accum ++ " "
+
+digitCounts :: [Integer] -> [Integer]
+digitCounts xs = zipWith count [0..9] (repeat xs)
+  where count x = fromIntegral . length . filter (\y -> x == y)
