@@ -9,17 +9,18 @@ foldTree = foldr insertNode Leaf
 
 insertNode :: a -> Tree a -> Tree a
 insertNode x Leaf = Node 0 Leaf x Leaf
-insertNode x (Node _ Leaf v r) = Node 1 (insertNode x Leaf) v r
-insertNode x (Node _ l v Leaf) = Node 1 l v (insertNode x Leaf)
-insertNode x (Node h lTree@(Node lHeight _ _ _) y rTree@(Node rHeight _ _ _))
-  | lHeight > rHeight = insertLeft
-  | otherwise         = insertRight
-    where lHeight = heightOf lTree
-          rHeight = heightOf rTree
-          insertLeft  = Node (h + lHeight) (insertNode x lTree) y rTree
-          insertRight = Node (h + rHeight) lTree y (insertNode x rTree)
+insertNode x (Node _ l y r)
+  | height l > height r  = Node (height newR + 1) l y newR
+  | otherwise            = Node (height newL + 1) newL y r
+    where newL = insertNode x l
+          newR = insertNode x r
 
-heightOf :: Tree a -> Int
-heightOf Leaf           = undefined
-heightOf (Node h _ _ _) = h
+height :: Tree a -> Integer
+height Leaf           = -1
+height (Node h _ _ _) = h
+
+isBalanced :: Tree a -> Bool
+isBalanced Leaf           = True
+isBalanced (Node _ l _ r) = subtreeDifference <= 1 && isBalanced l && isBalanced r
+  where subtreeDifference = abs (height l - height r)
 
