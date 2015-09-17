@@ -24,13 +24,36 @@ fibs2 = map fib2 [0..]
 data Stream a = Stream a (Stream a)
 
 instance Show a => Show (Stream a) where
-  show = show . take 20 . streamToList
+  show = show . take 50 . streamToList
 
 streamToList :: Stream a -> [a]
 streamToList (Stream x nextStream) = x:(streamToList nextStream)
+
+{- Exercise 4 -}
 
 streamRepeat :: a -> Stream a
 streamRepeat x = Stream x (streamRepeat x)
 
 streamMap:: (a -> b) -> Stream a -> Stream b
 streamMap f (Stream x nextStream) = Stream (f x) (streamMap f nextStream)
+
+streamFromSeed :: (a -> a) -> a -> Stream a
+streamFromSeed f x = Stream x (streamFromSeed f (f x))
+
+{- Exercise 5 -}
+
+nats :: Stream Integer
+nats = streamFromSeed (+1) 0
+
+evens :: Stream Integer
+evens = streamFromSeed (+2) 0
+
+interleaveStreams :: Stream a -> Stream a -> Stream a
+interleaveStreams (Stream a substreamA) streamB 
+  = Stream a (interleaveStreams streamB substreamA)
+
+ruler :: Stream Integer
+ruler = interleaveStreams zeros pof2s
+  where zeros = (streamRepeat 0)
+        pof2s = undefined
+
