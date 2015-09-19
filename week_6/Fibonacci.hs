@@ -24,7 +24,7 @@ fibs2 = map fib2 [0..]
 data Stream a = Stream a (Stream a)
 
 instance Show a => Show (Stream a) where
-  show = show . take 50 . streamToList
+  show = show . take 64 . streamToList
 
 streamToList :: Stream a -> [a]
 streamToList (Stream x nextStream) = x:(streamToList nextStream)
@@ -43,7 +43,7 @@ streamFromSeed f x = Stream x (streamFromSeed f (f x))
 {- Exercise 5 -}
 
 nats :: Stream Integer
-nats = streamFromSeed (+1) 0
+nats = streamFromSeed (+1) 1
 
 evens :: Stream Integer
 evens = streamFromSeed (+2) 0
@@ -53,7 +53,18 @@ interleaveStreams (Stream a substreamA) streamB
   = Stream a (interleaveStreams streamB substreamA)
 
 ruler :: Stream Integer
-ruler = interleaveStreams zeros pof2s
-  where zeros = (streamRepeat 0)
-        pof2s = undefined
+ruler = streamMap greatestPOf2ThatDividesN nats
+
+greatestPOf2ThatDividesN :: Integer -> Integer
+greatestPOf2ThatDividesN n
+  | odd n     = 0
+  | otherwise = last $ powersOf2UpToNThatDivideN n
+
+powersOf2UpToNThatDivideN :: Integer -> [Integer]
+powersOf2UpToNThatDivideN n = filter (powerEvenlyDivides n) (powersOf2UpToN n)
+  where powerEvenlyDivides x y = x `mod` (2 ^ y) == 0
+
+powersOf2UpToN :: Integer -> [Integer]
+powersOf2UpToN n = takeWhile (raisedToTwoIsLessThan n) $ [1..]
+  where raisedToTwoIsLessThan x y = 2 ^ y <= x
 
