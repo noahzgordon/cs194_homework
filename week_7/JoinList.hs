@@ -1,6 +1,11 @@
+{-# OPTIONS_GHC -Wall #-}
+{-# LANGUAGE FlexibleInstances, TypeSynonymInstances #-}
 module JoinList where
 import Data.Monoid
 import Sized
+import Scrabble
+import Buffer
+import Editor
 
 data JoinList m a = Empty
                   | Single m a
@@ -50,4 +55,36 @@ takeJ n (Append _ l r)
   | n <= lSize = takeJ n l
   | otherwise = l +++ (takeJ (n - lSize) r)
   where lSize = getSize . size $ tag l
+
+{- Exercise 4 -}
+
+scoreLine :: String -> JoinList (Score, Size) String
+scoreLine s = Single (scoreString s, Size 1) s
+
+instance Buffer (JoinList (Score, Size) String) where
+  -- | Convert a buffer to a String.
+  toString = unwords . jlToList
+
+  -- | Create a buffer from a String.
+  fromString = scoreLine
+
+  -- | Extract the nth line (0-indexed) from a buffer.  Return Nothing
+  -- for out-of-bounds indices.
+  line = indexJ
+
+  -- | @replaceLine n ln buf@ returns a modified version of @buf@,
+  --   with the @n@th line replaced by @ln@.  If the index is
+  --   out-of-bounds, the buffer should be returned unmodified.
+  replaceLine n s jl =  beforeList +++ (scoreLine s) +++ afterList
+    where beforeList = takeJ (n-1) jl
+          afterList  = dropJ n jl
+
+  -- | Compute the number of lines in the buffer.
+  numLines = getSize . size . tag
+
+  -- | Compute the value of the buffer, i.e. the amount someone would
+  --   be paid for publishing the contents of the buffer.
+  value = getScore . fst . tag
+
+main = runEditor editor $ Single (Score 8, Size 1) "hello"
 
