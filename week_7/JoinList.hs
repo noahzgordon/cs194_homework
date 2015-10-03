@@ -86,5 +86,8 @@ instance Buffer (JoinList (Score, Size) String) where
   --   be paid for publishing the contents of the buffer.
   value = getScore . fst . tag
 
-main = runEditor editor $ Single (Score 8, Size 1) "hello"
+main :: IO ()
+main = runEditor editor $ initList
+  where initList = (fromString intro) :: JoinList (Score, Size) String
+        intro = "Hello! Welcome to this weird scrabble buffer thing."
 
